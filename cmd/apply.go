@@ -196,7 +196,7 @@ func applyMOs(client *util.IsctlClient, rawMOs []rawMO) error {
 		}
 
 		if op == nil {
-			panic("AAAAA")
+			return fmt.Errorf("unable to determine operation (this is definitely a bug - please submit an issue in GitHub)")
 		}
 		err = op.SetBodyParams(client, mo)
 		if err != nil {
