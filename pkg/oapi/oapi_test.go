@@ -70,6 +70,11 @@ func TestCanonicaliseMoRefs(t *testing.T) {
 				"ClassId":      "bulk.MoCloner",
 				"Organization": "default",
 				"Sources":      []any{"MoRef:ServerProfileTemplateRelationship[OCP-BM]"},
+				"Targets": []any{
+					map[string]any{
+						"Organization": "MoRef:organization.Organization[default]",
+					},
+				},
 			},
 			baseSchema: "bulk.MoCloner",
 			expected: map[string]any{
@@ -82,6 +87,14 @@ func TestCanonicaliseMoRefs(t *testing.T) {
 					Filter:           "Name eq 'OCP-BM'",
 					RelationshipType: "server.ProfileTemplate.Relationship",
 				}},
+				"Targets": []any{
+					map[string]any{
+						"Organization": &MoRef{
+							Filter:           "Name eq 'default'",
+							RelationshipType: "organization.Organization",
+						},
+					},
+				},
 			},
 		},
 	}
@@ -206,6 +219,14 @@ func TestCanonicaliseMoRef(t *testing.T) {
 			moref:                   "59c84e4a16267c0001c23428",
 			defaultRelationshipType: "organisation.Organisation.Relationship",
 			res:                     nil,
+		},
+		{
+			moref:                   "MoRef:organization.Organization[default]",
+			defaultRelationshipType: "",
+			res: &MoRef{
+				Filter:           "Name eq 'default'",
+				RelationshipType: "organization.Organization",
+			},
 		},
 	}
 

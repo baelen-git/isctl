@@ -36,7 +36,7 @@ func getOperation(path, method string, operation map[string]any) *Operation {
 		"path":        path,
 		"method":      method,
 		"operationId": operationId,
-	}).Debug("processing operation")
+	}).Trace("processing operation")
 
 	return &newOp
 }

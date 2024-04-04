@@ -20,7 +20,7 @@ var (
 	applyDelete    bool
 )
 
-type rawMO map[string]any
+type rawMO = map[string]any
 
 type applyConfig struct {
 	client *util.IsctlClient
@@ -85,12 +85,12 @@ func destroyMOs(client *util.IsctlClient, rawMOs []rawMO) error {
 	for i := len(rawMOs) - 1; i >= 0; i-- {
 		mo := rawMOs[i]
 
-		classID, err := mo.getString("ClassId")
+		classID, err := getString(mo, "ClassId")
 		if err != nil {
 			return err
 		}
 
-		name, err := mo.getString("Name")
+		name, err := getString(mo, "Name")
 		if err != nil {
 			return err
 		}
@@ -122,7 +122,7 @@ func destroyMOs(client *util.IsctlClient, rawMOs []rawMO) error {
 
 func applyMOs(client *util.IsctlClient, rawMOs []rawMO) error {
 	for _, mo := range rawMOs {
-		classID, err := mo.getString("ClassId")
+		classID, err := getString(mo, "ClassId")
 		if err != nil {
 			return err
 		}
@@ -141,7 +141,7 @@ func applyMOs(client *util.IsctlClient, rawMOs []rawMO) error {
 			args = []string{}
 
 		} else {
-			name, err := mo.getString("Name")
+			name, err := getString(mo, "Name")
 			if err != nil {
 				return err
 			}
@@ -151,7 +151,7 @@ func applyMOs(client *util.IsctlClient, rawMOs []rawMO) error {
 			// since Names are only unique within an org
 			var filter string
 			if classID != "organization.Organization" {
-				orgString, err := mo.getString("Organization")
+				orgString, err := getString(mo, "Organization")
 				if err != nil {
 					orgString = "default"
 				}
@@ -282,7 +282,7 @@ func getOrderedMOs(mos []rawMO) ([]rawMO, error) {
 
 	// setup the finalised, processing, dependencies and mosForClassID structures from the input mos
 	for _, mo := range mos {
-		classID, err := mo.getString("ClassId")
+		classID, err := getString(mo, "ClassId")
 		if err != nil {
 			return nil, err
 		}
@@ -358,7 +358,7 @@ func getOrderedMOsVisit(classID string, finalised, processing *map[string]bool, 
 	return nil
 }
 
-func (mo rawMO) getString(attr string) (string, error) {
+func getString(mo rawMO, attr string) (string, error) {
 	attrIntf, ok := mo[attr]
 	if !ok {
 		return "", fmt.Errorf("invalid MO - no %s attribute", attr)

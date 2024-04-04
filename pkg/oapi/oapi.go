@@ -84,7 +84,7 @@ func CanonicaliseMoRef(moref string, defaultRelationshipType string) *MoRef {
 
 	r = regexp.MustCompile(`MoRef\[\$filter:(.+)\]`)
 	m = r.FindStringSubmatch(moref)
-	if m != nil {
+	if m != nil && defaultRelationshipType != "" {
 		return &MoRef{
 			Filter:           m[1],
 			RelationshipType: defaultRelationshipType,
@@ -113,7 +113,7 @@ func CanonicaliseMoRef(moref string, defaultRelationshipType string) *MoRef {
 	r = regexp.MustCompile(`MoRef\[(\w+):([0-9A-Za-z_\-\.]+)\]`)
 
 	m = r.FindStringSubmatch(moref)
-	if m != nil {
+	if m != nil && defaultRelationshipType != "" {
 		return &MoRef{
 			Filter:           fmt.Sprintf("%s eq '%s'", m[1], m[2]),
 			RelationshipType: defaultRelationshipType,
@@ -131,7 +131,7 @@ func CanonicaliseMoRef(moref string, defaultRelationshipType string) *MoRef {
 
 	r = regexp.MustCompile(`^MoRef\[([0-9A-Za-z_\-\.]+)\]`)
 	m = r.FindStringSubmatch(moref)
-	if m != nil {
+	if m != nil && defaultRelationshipType != "" {
 		return &MoRef{
 			Filter:           fmt.Sprintf("Name eq '%s'", m[1]),
 			RelationshipType: defaultRelationshipType,
@@ -140,7 +140,7 @@ func CanonicaliseMoRef(moref string, defaultRelationshipType string) *MoRef {
 
 	r = regexp.MustCompile(`^\s*([0-9A-Za-z_\-\.]+)\s*$`)
 	m = r.FindStringSubmatch(moref)
-	if m != nil {
+	if m != nil && defaultRelationshipType != "" {
 		return &MoRef{
 			Filter:           fmt.Sprintf("Name eq '%s'", m[1]),
 			RelationshipType: defaultRelationshipType,
@@ -185,6 +185,30 @@ func canonicaliseMoRefs(o *map[string]any, s map[string]any) {
 	}
 }
 
+func canonicaliseMoRefsWithoutSchema(body any) any {
+	switch body := body.(type) {
+	case map[string]any:
+		for k, v := range body {
+			new := canonicaliseMoRefsWithoutSchema(v)
+			body[k] = new
+		}
+		return body
+	case []any:
+		for i, v := range body {
+			new := canonicaliseMoRefsWithoutSchema(v)
+			body[i] = new
+		}
+		return body
+	case string:
+		new := CanonicaliseMoRef(body, "")
+		if new != nil {
+			return new
+		}
+	}
+
+	return body
+}
+
 func CanonicaliseMoRefs(o *map[string]any, baseSchemaName string) {
 	schema := getSchema(baseSchemaName)
 	if schema == nil {
@@ -192,6 +216,12 @@ func CanonicaliseMoRefs(o *map[string]any, baseSchemaName string) {
 	}
 
 	canonicaliseMoRefs(o, schema)
+
+	// Do a secondary pass to force expand any remaining "MoRef:<type>[target]" refs
+	newO := canonicaliseMoRefsWithoutSchema(*o)
+	if newO, ok := newO.(map[string]any); ok {
+		*o = newO
+	}
 }
 
 func SchemaNameToClassId(ref string) string {
