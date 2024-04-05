@@ -224,10 +224,11 @@ func CanonicaliseMoRefs(o *map[string]any, baseSchemaName string) {
 	}
 }
 
+var schemaNameRegexp = regexp.MustCompile(`^#/components/schemas/(.*)$`)
+
 func SchemaNameToClassId(ref string) string {
 	// If this is a fully qualified schema path just strip out the name
-	pathRe := regexp.MustCompile(`^#/components/schemas/(.*)$`)
-	m := pathRe.FindStringSubmatch(ref)
+	m := schemaNameRegexp.FindStringSubmatch(ref)
 	if m != nil {
 		return m[1]
 	}
