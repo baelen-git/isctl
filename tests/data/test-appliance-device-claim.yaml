@@ -1,0 +1,5 @@
+ClassId: appliance.DeviceClaim
+PlatformType: IMC
+Hostname: 192.168.9.10
+Username: admin
+Password: "<redacted>"

@@ -68,6 +68,18 @@ TEST_SECTION="Apply"
     run ./build/isctl ${ISCTL_OPTIONS} delete server profiletemplate name "${TEST_NAME}" 
 }
 
+@test "${TEST_SECTION}: apply for MO with no Name attribute" {
+    run ./build/isctl ${ISCTL_OPTIONS} apply -f tests/data/test-appliance-device-claim.yaml
+    # this should fail because we're are testing against SaaS, not an appliance but as long as the error code matches we know the request was sent properly
+    assert_failure
+    assert_line --partial "Performing create operation on new MO (ClassId: appliance.DeviceClaim)"
+    assert_line --partial "Error while applying MOs: error executing operation: request failed: 403 Forbidden: Operation not supported."
+}
+
+setup() {
+    load 'test_helper/bats-support/load' # this is required by bats-assert!
+    load 'test_helper/bats-assert/load'
+}
 
 setup_file() {
     # delete the test objects if they already exist. Don't check the exit code. 

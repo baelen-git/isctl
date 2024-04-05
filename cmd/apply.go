@@ -131,7 +131,8 @@ func applyMOs(client *util.IsctlClient, rawMOs []rawMO) error {
 		var op *gen.Operation
 
 		getOperation := gen.GetGetOperationForClassID(classID)
-		if getOperation == nil {
+		_, moHasName := mo["Name"]
+		if getOperation == nil || !moHasName {
 			op = gen.GetCreateOperationForClassID(classID)
 			if op == nil {
 				return fmt.Errorf("no create operation for ClassId %s", classID)
