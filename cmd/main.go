@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"runtime/pprof"
 
 	"github.com/knadh/koanf/parsers/yaml"
 	homedir "github.com/mitchellh/go-homedir"
@@ -27,7 +28,8 @@ var (
 type commandGenerator func(*util.IsctlClient) *cobra.Command
 
 const (
-	traceEnvName = "ISCTL_TRACE"
+	traceEnvName      = "ISCTL_TRACE"
+	cpuProfileEnvName = "ISCTL_CPU_PROFILE"
 )
 
 func main() {
@@ -36,6 +38,15 @@ func main() {
 	}
 
 	log.Trace("isctl starting")
+
+	if cpuProfile := os.Getenv(cpuProfileEnvName); cpuProfile != "" {
+		f, err := os.Create(cpuProfile)
+		if err != nil {
+			log.Fatalf("creating cpu profile file: %v", err)
+		}
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
+	}
 
 	rootCmd := gen.GetCommands(client, resultHandler)
 	rootCmd.Use = "isctl"

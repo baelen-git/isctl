@@ -37,3 +37,9 @@ func TestFindOperation(t *testing.T) {
 	assert.NotNil(t, op)
 	assert.Equal(t, "DeleteNtpPolicy", op.OperationID)
 }
+
+func TestRedundantPrefixes(t *testing.T) {
+	f := removeRedundantPrefixes()
+	assert.Equal(t, []string{"get", "ntp", "Policy"}, f([]string{"get", "ntp", "GetNtpPolicy"}))
+
+}

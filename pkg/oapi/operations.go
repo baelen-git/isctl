@@ -36,7 +36,7 @@ func getOperation(path, method string, operation map[string]any) *Operation {
 		"path":        path,
 		"method":      method,
 		"operationId": operationId,
-	}).Debug("processing operation")
+	}).Trace("processing operation")
 
 	return &newOp
 }
@@ -79,9 +79,10 @@ func SchemaNameToType(sn string) string {
 	return ToCamelCase(m[1])
 }
 
+var paramNameRegexp = regexp.MustCompile(`^#/components/parameters/(.+)$`)
+
 func getParam(paramName string) *Param {
-	r := regexp.MustCompile(`^#/components/parameters/(.+)$`)
-	m := r.FindStringSubmatch(paramName)
+	m := paramNameRegexp.FindStringSubmatch(paramName)
 	if m != nil {
 		paramName = m[1]
 	}
@@ -399,7 +400,13 @@ func removeRedundantPrefixes() fixupFunc {
 		prefix := ""
 		for i := range tokens {
 			t := tokens[i]
-			tokens[i] = regexp.MustCompile(`(?i)^`+prefix).ReplaceAllString(t, "")
+
+			//Below is equivalent to this line but performs much better
+			// tokens[i] = regexp.MustCompile(`(?i)^`+prefix).ReplaceAllString(t, "")
+			if strings.HasPrefix(strings.ToLower(t), strings.ToLower(prefix)) {
+				tokens[i] = t[len(prefix):]
+			}
+
 			prefix += t
 		}
 
