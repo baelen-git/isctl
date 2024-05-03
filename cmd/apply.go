@@ -152,16 +152,21 @@ func applyMOs(client *util.IsctlClient, rawMOs []rawMO) error {
 			// since Names are only unique within an org
 			var filter string
 			if classID != "organization.Organization" {
-				orgString, err := getString(mo, "Organization")
+				var cMoRef *oapi.MoRef
+				orgAttr, err := dyno.Get(mo, "Organization")
 				if err != nil {
-					orgString = "default"
+					cMoRef = oapi.CanonicaliseMoRef("default", "organization.Organization.Relationship")
+				} else {
+					switch orgAttr := orgAttr.(type) {
+					case string:
+						cMoRef = oapi.CanonicaliseMoRef(orgAttr, "organization.Organization.Relationship")
+					case *oapi.MoRef:
+						cMoRef = orgAttr
+					default:
+						return fmt.Errorf("error: unable to determine Organization reference")
+					}
 				}
 
-				// orgMoRef, err := gen.GetMoMoRefByFilter(client, orgString, "OrganizationOrganizationRelationship")
-				cMoRef := oapi.CanonicaliseMoRef(orgString, "organization.Organization.Relationship")
-				if cMoRef == nil {
-					return fmt.Errorf("error canonicalising organisation MoRef")
-				}
 				orgMoRef, err := gen.GetMoMoRef(client, cMoRef)
 				if err != nil {
 					return fmt.Errorf("error finding organisation: %v", err)
