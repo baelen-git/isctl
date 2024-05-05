@@ -84,4 +84,9 @@ func TestGetReferencedClasses(t *testing.T) {
 		"organization.Organization",
 		"server.ProfileTemplate",
 	}, refClasses)
+
+	refClasses = GetReferencedClasses(map[string]any{
+		"Organization": (*oapi.MoRef)(nil),
+	})
+	assert.ElementsMatch(t, []string{}, refClasses)
 }

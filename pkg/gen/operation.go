@@ -172,7 +172,9 @@ func GetReferencedClasses(params any) []string {
 		}
 		return ret
 	case *oapi.MoRef:
-		return []string{getClassIDFromRelationship(params.RelationshipType)}
+		if params != nil {
+			return []string{getClassIDFromRelationship(params.RelationshipType)}
+		}
 	}
 
 	return []string{}
