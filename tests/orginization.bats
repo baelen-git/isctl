@@ -18,7 +18,7 @@ TEST_SECTION="Organization"
 
     echo "Creating test IAM endpointuserrole in test org (references endpointuser and endpointuserpolicy in specific org)"
     ./build/isctl ${ISCTL_OPTIONS} create iam endpointuserrole \
-        --EndPointRole '[{"ClassId":"mo.MoRef", "Moid": "59684dcb5e468000016525c8"}]' \
+        --EndPointRole "[\"MoRef[\$filter:Name eq 'admin' and Type eq 'IMC']\"]" \
         --EndPointUser "MoRef[${TEST_NAME}\\${TEST_NAME}]" \
         --EndPointUserPolicy "MoRef[${TEST_NAME}\\${TEST_NAME}]" \
         --Password hahahahaha
