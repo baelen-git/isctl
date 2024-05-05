@@ -56,6 +56,18 @@ TEST_SECTION="Apply"
     assert_line --partial "Error while applying MOs: error executing operation: request failed: 403 Forbidden: Operation not supported."
 }
 
+@test "${TEST_SECTION}: create and delete YAML file with unnamed objects" {
+    ./build/isctl ${ISCTL_OPTIONS} apply -f tests/data/test-delete-with-unnamed.yaml
+
+    run ./build/isctl get fabric portpolicy name isctl-bats-test
+    assert_success
+
+    ./build/isctl ${ISCTL_OPTIONS} apply -d -f tests/data/test-delete-with-unnamed.yaml
+
+    run ./build/isctl get fabric portpolicy name isctl-bats-test
+    assert_failure
+}
+
 setup() {
     load 'test_helper/bats-support/load' # this is required by bats-assert!
     load 'test_helper/bats-assert/load'

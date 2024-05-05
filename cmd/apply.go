@@ -92,7 +92,8 @@ func destroyMOs(client *util.IsctlClient, rawMOs []rawMO) error {
 
 		name, err := getString(mo, "Name")
 		if err != nil {
-			return err
+			log.Warnf("Skipping MO with no Name attribute")
+			continue
 		}
 
 		getOperation := gen.GetGetOperationForClassID(classID)
