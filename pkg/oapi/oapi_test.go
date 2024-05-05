@@ -228,6 +228,24 @@ func TestCanonicaliseMoRef(t *testing.T) {
 				RelationshipType: "organization.Organization",
 			},
 		},
+		{
+			moref:                   "MoRef[default\\test]",
+			defaultRelationshipType: "ntp.Policy",
+			res: &MoRef{
+				Filter:           "Name eq 'test'",
+				RelationshipType: "ntp.Policy",
+				Organization:     "default",
+			},
+		},
+		{
+			moref:                   "MoRef:iam.EndPointUser[default\\test]",
+			defaultRelationshipType: "",
+			res: &MoRef{
+				Filter:           "Name eq 'test'",
+				RelationshipType: "iam.EndPointUser",
+				Organization:     "default",
+			},
+		},
 	}
 
 	for _, test := range tests {
