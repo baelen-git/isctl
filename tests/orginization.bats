@@ -11,6 +11,28 @@ TEST_SECTION="Organization"
     ./build/isctl ${ISCTL_OPTIONS} create iam endpointuser --Name "${TEST_NAME}" --Organization "${TEST_NAME}"
 }
 
+@test "${TEST_SECTION}: manually reference an mo in a specific org" {
+
+    echo "Creating test IAM endpointuserpolicy in test org"
+    ./build/isctl ${ISCTL_OPTIONS} create iam endpointuserpolicy --Name "${TEST_NAME}" --Organization "${TEST_NAME}"
+
+    echo "Creating test IAM endpointuserrole in test org (references endpointuser and endpointuserpolicy in specific org)"
+    ./build/isctl ${ISCTL_OPTIONS} create iam endpointuserrole \
+        --EndPointRole '[{"ClassId":"mo.MoRef", "Moid": "59684dcb5e468000016525c8"}]' \
+        --EndPointUser "MoRef[${TEST_NAME}\\${TEST_NAME}]" \
+        --EndPointUserPolicy "MoRef[${TEST_NAME}\\${TEST_NAME}]" \
+        --Password hahahahaha
+
+    echo "Deleteing test IAM endpointuserrole in test org"
+    ORG_MOID=$(./build/isctl ${ISCTL_OPTIONS} get organization organization --name "${TEST_NAME}" -o jsonpath='$.Moid'|| echo "")
+
+    # Don't need to delete endpointuserrole - it is automatically deleted when the policy is deleted
+    # ./build/isctl ${ISCTL_OPTIONS} delete iam endpointuserrole moid $(./build/isctl ${ISCTL_OPTIONS} get iam endpointuserrole --filter "Name eq '${TEST_NAME}' and Organization/Moid eq '${ORG_MOID}'" -o 'jsonpath=$[*].Moid'|| echo "")
+
+    echo "Deleteing test IAM endpointuserpolicy in test org"
+    ./build/isctl ${ISCTL_OPTIONS} delete iam endpointuserpolicy moid $(./build/isctl ${ISCTL_OPTIONS} get iam endpointuserpolicy --filter "Name eq '${TEST_NAME}' and Organization/Moid eq '${ORG_MOID}'" -o 'jsonpath=$[*].Moid'|| echo "")
+}
+
 # This test is disabled as it the API no longer allows NTP policies with the same name in different orgs
 # @test "${TEST_SECTION}: manually create duplicate ntp policies" {
 #     echo "Creating test NTP policy in default org"

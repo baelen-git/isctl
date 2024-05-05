@@ -22,12 +22,30 @@ func GetMoMoRef(client *util.IsctlClient, moref *oapi.MoRef) (map[string]any, er
 		return mo, nil
 	}
 
+	filter := moref.Filter
+
+	// Here we look up the moid of the organisation if the MoRef has the organization set
+	if moref.Organization != "" {
+		orgMoRef := oapi.CanonicaliseMoRef(moref.Organization, "organization.Organization.Relationship")
+		resolvedOrgMoRef, err := GetMoMoRef(client, orgMoRef)
+		if err != nil {
+			return nil, fmt.Errorf("error finding organisation: %v", err)
+		}
+
+		orgMoid, err := dyno.GetString(resolvedOrgMoRef, "Moid")
+		if err != nil {
+			return nil, fmt.Errorf("error finding organisation: %v", err)
+		}
+
+		filter = fmt.Sprintf("%s and Organization/Moid eq '%s'", filter, orgMoid)
+	}
+
 	op := GetOperationForRelationship(moref.RelationshipType)
 	if op == nil {
 		return nil, fmt.Errorf("no operation for relationship %s", moref.RelationshipType)
 	}
 
-	res, err := op.Execute(client, nil, map[string]string{"filter": moref.Filter})
+	res, err := op.Execute(client, nil, map[string]string{"filter": filter})
 	if err != nil {
 		return nil, fmt.Errorf("error executing lookup query: %v", err)
 	}

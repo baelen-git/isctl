@@ -61,6 +61,7 @@ func getSchemaProperty(propName string, schema map[string]any) map[string]any {
 type MoRef struct {
 	Filter           string
 	RelationshipType string
+	Organization     string
 }
 
 func canonicaliseRelationshipType(rt string) string {
@@ -135,6 +136,28 @@ func CanonicaliseMoRef(moref string, defaultRelationshipType string) *MoRef {
 		return &MoRef{
 			Filter:           fmt.Sprintf("Name eq '%s'", m[1]),
 			RelationshipType: defaultRelationshipType,
+		}
+	}
+
+	// MoRef:ntp.Policy[default\test]
+	r = regexp.MustCompile(`^MoRef:([\w\.]+)\[([0-9A-Za-z_\-\.]+)\\([0-9A-Za-z_\-\.]+)\]`)
+	m = r.FindStringSubmatch(moref)
+	if m != nil {
+		return &MoRef{
+			Filter:           fmt.Sprintf("Name eq '%s'", m[3]),
+			RelationshipType: canonicaliseRelationshipType(m[1]),
+			Organization:     m[2],
+		}
+	}
+
+	// MoRef[default\test]
+	r = regexp.MustCompile(`^MoRef\[([0-9A-Za-z_\-\.]+)\\([0-9A-Za-z_\-\.]+)\]`)
+	m = r.FindStringSubmatch(moref)
+	if m != nil && defaultRelationshipType != "" {
+		return &MoRef{
+			Filter:           fmt.Sprintf("Name eq '%s'", m[2]),
+			RelationshipType: defaultRelationshipType,
+			Organization:     m[1],
 		}
 	}
 
