@@ -1,0 +1,11 @@
+ClassId: fabric.PortPolicy
+Description: ""
+DeviceModel: UCS-FI-6454
+Name: isctl-bats-test
+Organization: default
+---
+ClassId: fabric.PortMode
+PortPolicy: MoRef[isctl-bats-test]
+PortIdStart: 1
+PortIdEnd: 4
+SlotId: 1
